@@ -98,10 +98,8 @@
                 </div>
                 <!-- 오른쪽 대안 예고 (단기 방어형) -->
                 <div class="bg-amber-950/50 rounded-md border border-amber-500/40 p-1 text-center flex flex-col justify-between">
-                    <div>
-                        <div class="text-[7px] text-amber-300 font-black mb-0.5">B (단기 방어형) ▶</div>
-                        <div id="decision-right-desc" class="text-[8px] font-bold text-slate-100 leading-tight min-h-[16px] flex items-center justify-center"></div>
-                    </div>
+                    <div class="text-[7px] text-amber-300 font-black mb-0.5">B (단기 방어형) ▶</div>
+                    <div id="decision-right-desc" class="text-[8px] font-bold text-slate-100 leading-tight min-h-[16px] flex items-center justify-center"></div>
                     <div id="decision-right-impact" class="text-[6.5px] font-medium text-slate-300 leading-none mt-0.5 truncate"></div>
                 </div>
             </div>
@@ -1539,6 +1537,7 @@
         let speedFactor = 1.0; 
         let frameCount = 0; 
         let seaScrollOffset = 0;
+        let lastEnemySpawnZ = 0;
 
         function handleProceduralSpawning() {
             // 750m 전진할 때마다 교대로 지정학 시나리오 게이트 배치
@@ -1547,8 +1546,14 @@
                 spawnPolicyGatesOnly();
             }
 
+            // 게이트/보스가 없는 구간에서는 주기적으로 적 기계 무리를 배치
+            if (continuousGates.length === 0 && activeBosses.length === 0 &&
+                progressZ - lastEnemySpawnZ >= 320) {
+                lastEnemySpawnZ = progressZ;
+                spawnChallengeSwarm();
+            }
+
             frameCount++;
-            // 첨부된 자료에 없는 별도의 전투/장애물 상황은 발생시키지 않음
         }
 
         function spawnChallengeSwarm() {
@@ -1600,8 +1605,13 @@
         }
 
         function spawnThematicChallenge(theme, shouldSpawnBoss) {
-            // 첨부된 5개 위기 상황과 선택지 외의 전투/장애물/보스 상황은 발생시키지 않음
             currentZone++;
+            if (shouldSpawnBoss) {
+                activeBosses.push(new SituationalBoss(theme));
+                addFloatingLabel(squad.x, squad.z, "위기 격화! 보스 출현", "#ef4444");
+            } else {
+                spawnChallengeSwarm();
+            }
         }
     </script>
 
@@ -1965,6 +1975,7 @@
             score = 0;
             progressZ = 0;
             lastSpawnZ = 0;
+            lastEnemySpawnZ = 0;
             currentZone = 1;
             scrollSpeed = 4.5; 
             speedFactor = 1.0; 
@@ -2020,6 +2031,3 @@
     </script>
 </body>
 </html>
-
-
-
